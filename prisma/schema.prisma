@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model policy {
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  type         String // "privacy" or "terms"
+  jurisdiction String // e.g., "EU", "US", "BG"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String
+  user         user     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Policy_userId_fkey")
+}
+
+model subscription {
+  id                   String              @id @default(cuid())
+  userId               String              @unique
+  user                 user                @relation(fields: [userId], references: [id])
+  status               subscription_status @default(ACTIVE)
+  plan                 subscription_plan   @default(FREE)
+  currentPeriodStart   DateTime            @default(now())
+  currentPeriodEnd     DateTime            @default(now())
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  stripeSubscriptionId String?             @unique
+
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
+
+model user {
+  id               String        @id @default(cuid())
+  name             String?
+  email            String        @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  stripeCustomerId String?       @unique
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  policies         policy[]
+  subscription     subscription?
+}
+
+enum subscription_status {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+enum subscription_plan {
+  FREE
+  PREMIUM
+}
