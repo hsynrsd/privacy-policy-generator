@@ -12,13 +12,16 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { name, email, currentPassword, newPassword } = body;
+    const { name, email, currentPassword, newPassword, image } = body;
 
     // Update basic profile info
     const updateData: any = {
       name,
       email,
     };
+    if (image) {
+      updateData.image = image;
+    }
 
     // If password change is requested
     if (currentPassword && newPassword) {
@@ -48,6 +51,7 @@ export async function PATCH(req: Request) {
       id: updatedUser.id,
       name: updatedUser.name,
       email: updatedUser.email,
+      image: updatedUser.image,
     });
   } catch (error) {
     console.error("[PROFILE_UPDATE]", error);

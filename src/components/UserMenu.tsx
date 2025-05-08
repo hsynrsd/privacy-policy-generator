@@ -39,13 +39,17 @@ export default function UserMenu({ user }: UserMenuProps) {
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className="sr-only">Open user menu</span>
-            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-black">
-              {user.name?.[0] || user.email?.[0]}
+            <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-black overflow-hidden border-2 border-blue-500 hover:border-blue-700 transition-all">
+              {user.image ? (
+                <img src={user.image} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <span className="font-bold">{user.name?.[0] || user.email?.[0]}</span>
+              )}
             </div>
           </button>
           {isOpen && (
             <div
-              className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+              className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="user-menu-button"

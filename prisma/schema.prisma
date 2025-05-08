@@ -8,17 +8,44 @@ datasource db {
 }
 
 model policy {
-  id           String   @id @default(cuid())
-  title        String
-  content      String
-  type         String // "privacy" or "terms"
-  jurisdiction String // e.g., "EU", "US", "BG"
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId       String
-  user         user     @relation(fields: [userId], references: [id])
+  id             String          @id @default(cuid())
+  title          String
+  content        String          @db.Text
+  type           String          // "privacy" or "terms"
+  jurisdiction   String          // e.g., "EU", "US", "BG"
+  version        String          // e.g., "1.0", "1.1"
+  effectiveDate  DateTime
+  lastReviewDate DateTime?
+  status         policy_status   @default(ACTIVE)
+  metadata       Json?           // Stores additional policy metadata
+  history        policyHistory[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  userId         String
+  user           user            @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "Policy_userId_fkey")
+}
+
+model policyHistory {
+  id            String   @id @default(cuid())
+  policyId      String
+  policy        policy   @relation(fields: [policyId], references: [id])
+  version       String
+  content       String   @db.Text
+  effectiveDate DateTime
+  changes       String?  @db.Text  // Description of changes
+  createdAt     DateTime @default(now())
+  updatedBy     String?  // User who made the change
+
+  @@index([policyId])
+}
+
+enum policy_status {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  SUPERSEDED
 }
 
 model subscription {

@@ -4,8 +4,12 @@ import { authOptions } from "@/lib/auth";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is not defined");
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-03-31.basil",
 });
 
 export async function POST(req: Request) {
@@ -24,6 +28,10 @@ export async function POST(req: Request) {
       return new NextResponse("No active subscription found", { status: 404 });
     }
 
+    if (!user.subscription.stripeSubscriptionId) {
+      return new NextResponse("No Stripe subscription ID found", { status: 404 });
+    }
+
     // Cancel the subscription in Stripe
     await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
 
@@ -31,7 +39,7 @@ export async function POST(req: Request) {
     await prisma.subscription.update({
       where: { id: user.subscription.id },
       data: {
-        status: "canceled",
+        status: "CANCELED",
       },
     });
 

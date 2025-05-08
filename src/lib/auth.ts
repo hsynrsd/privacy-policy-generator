@@ -67,6 +67,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).name = token.name;
         (session.user as any).email = token.email;
+        (session.user as any).image = token.image;
       }
       return session;
     },
@@ -75,6 +76,11 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        // Fetch latest user image from DB
+        if (typeof user.email === 'string') {
+          const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
+          token.image = typeof dbUser?.image === 'string' ? dbUser.image : undefined;
+        }
       }
       return token;
     },
